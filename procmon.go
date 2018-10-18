@@ -37,7 +37,6 @@ func handleArg(uargs []string) []garlic.EventType {
 	}
 
 	return events
-
 }
 
 func runMon(events []garlic.EventType, json bool) {
@@ -65,10 +64,11 @@ func runMon(events []garlic.EventType, json bool) {
 		}
 		for _, singleEvt := range evt {
 			evtString := formatEvtStr(singleEvt)
-			fmt.Printf("Got %s event on CPU %d at %d\n %s",
+
+			fmt.Printf("Got %s event on CPU %d at %s\n %s",
 				formatEvtType(singleEvt.What),
 				singleEvt.CPU,
-				singleEvt.TimestampNs,
+				singleEvt.TimestampNs.Local(),
 				evtString)
 		}
 

@@ -24,4 +24,3 @@ $ sudo ./procmon
 
 - Add a little signal number (17 == SIGCHLD) helper
 - JSON output
-- Better timestamps
