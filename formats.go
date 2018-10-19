@@ -1,13 +1,98 @@
 package main
 
 import (
-	"bytes"
+	"encoding/json"
 	"fmt"
 
 	"github.com/fearful-symmetry/garlic"
 )
 
 //functions to handle formatting events
+
+//json string out that goes to stdout
+func formatEvtJSON(evt garlic.ProcEvent) (string, error) {
+
+	j, err := json.Marshal(evt)
+	if err != nil {
+		return "", err
+	}
+
+	return string(j), nil
+
+}
+
+// func formatEvtJSON(evt garlic.ProcEvent) string {
+
+// 	var jsonMap map[string]interface{}
+// 	switch evt.What {
+// 	case garlic.ProcEventFork:
+// 		p := evt.EventData.(garlic.Fork)
+// 		jsonMap = map[string]interface{}{
+// 			"parent_pid":  p.ParentPid,
+// 			"parent_tgid": p.ParentTgid,
+// 			"child_pid":   p.ChildPid,
+// 			"child_tgid":  p.ChildTgid,
+// 		}
+// 	case garlic.ProcEventExec:
+// 		p := evt.EventData.(garlic.Exec)
+// 		jsonMap = map[string]interface{}{
+// 			"process_pid":  p.ProcessPid,
+// 			"process_tgid": p.ProcessTgid,
+// 		}
+// 	case garlic.ProcEventUID:
+// 		p := evt.EventData.(garlic.ID)
+// 		jsonMap = map[string]interface{}{
+// 			"process_pid":  p.ProcessPid,
+// 			"process_tgid": p.ProcessTgid,
+// 			"process_ruid": p.RealID,
+// 			"process_euid": p.EffectiveID,
+// 		}
+// 	case garlic.ProcEventGID:
+// 		p := evt.EventData.(garlic.ID)
+// 		jsonMap = map[string]interface{}{
+// 			"process_pid":  p.ProcessPid,
+// 			"process_tgid": p.ProcessTgid,
+// 			"process_rgid": p.RealID,
+// 			"process_egid": p.EffectiveID,
+// 		}
+// 	case garlic.ProcEventSID:
+// 		p := evt.EventData.(garlic.Sid)
+// 		jsonMap = map[string]interface{}{
+// 			"process_pid":  p.ProcessPid,
+// 			"process_tgid": p.ProcessTgid,
+// 		}
+// 	case garlic.ProcEventPtrace:
+// 		p := evt.EventData.(garlic.Ptrace)
+// 		jsonMap = map[string]interface{}{
+// 			"process_pid":  p.ProcessPid,
+// 			"process_tgid": p.ProcessTgid,
+// 			"tracer_pid":   p.TracerPid,
+// 			"tracer_tgid":  p.TracerTgid,
+// 		}
+// 	case garlic.ProcEventComm:
+// 		p := evt.EventData.(garlic.Comm)
+// 		jsonMap = map[string]interface{}{
+// 			"process_pid":  p.ProcessPid,
+// 			"process_tgid": p.ProcessTgid,
+// 			"command":      string(p.Comm[:bytes.IndexByte(p.Comm[:], 0)]),
+// 		}
+// 	case garlic.ProcEventCoredump:
+// 		p := evt.EventData.(garlic.Coredump)
+// 		jsonMap = map[string]interface{}{
+// 			"process_pid":  p.ProcessPid,
+// 			"process_tgid": p.ProcessTgid,
+// 		}
+// 	case garlic.ProcEventExit:
+// 		p := evt.EventData.(garlic.Exit)
+// 		jsonMap = map[string]interface{}{
+// 			"process_pid":  p.ProcessPid,
+// 			"process_tgid": p.ProcessTgid,
+// 			"exit_code":    p.ExitCode,
+// 			"exit_signal":  p.ExitSignal,
+// 		}
+// 	}
+
+// }
 
 //string out that goes to stdout
 func formatEvtStr(evt garlic.ProcEvent) string {
@@ -43,7 +128,7 @@ func formatEvtStr(evt garlic.ProcEvent) string {
 		//bless me father for I have sinned
 		//Convert the comm array to a string while making sure we don't print null bytes
 		baseStr = fmt.Sprintf("\tProcess PID: %d\n\tProcess TGID: %d\n\tCommand: %s\n",
-			p.ProcessPid, p.ProcessTgid, string(p.Comm[:bytes.IndexByte(p.Comm[:], 0)]))
+			p.ProcessPid, p.ProcessTgid, p.Comm)
 	case garlic.ProcEventCoredump:
 		p := evt.EventData.(garlic.Coredump)
 		baseStr = fmt.Sprintf("Process PID: %d\n\tProcess TGID: %d\n",

@@ -23,4 +23,6 @@ $ sudo ./procmon
 ## TODO
 
 - Add a little signal number (17 == SIGCHLD) helper
-- JSON output
+- UTC flag
+- make the JSON event type less ugly
+- Colored output?

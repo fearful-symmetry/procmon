@@ -64,12 +64,20 @@ func runMon(events []garlic.EventType, json bool) {
 		}
 		for _, singleEvt := range evt {
 			evtString := formatEvtStr(singleEvt)
+			if json {
+				json, err := formatEvtJSON(singleEvt)
+				if err != nil {
+					le.Fatalf("Error parsing to JSON: %s", err)
+				}
+				fmt.Println(json)
+			} else {
+				fmt.Printf("Got %s event on CPU %d at %s\n %s",
+					formatEvtType(singleEvt.What),
+					singleEvt.CPU,
+					singleEvt.Timestamp.Local(),
+					evtString)
+			}
 
-			fmt.Printf("Got %s event on CPU %d at %s\n %s",
-				formatEvtType(singleEvt.What),
-				singleEvt.CPU,
-				singleEvt.TimestampNs.Local(),
-				evtString)
 		}
 
 	}
@@ -96,6 +104,6 @@ func main() {
 		evtList = handleArg(*events)
 	}
 
-	runMon(evtList, false)
+	runMon(evtList, *isJSON)
 
 }
