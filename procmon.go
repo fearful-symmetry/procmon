@@ -63,7 +63,7 @@ func runMon(events []garlic.EventType, json bool) {
 			continue
 		}
 		for _, singleEvt := range evt {
-			evtString := formatEvtStr(singleEvt)
+			evtString := formatEvtPretty(singleEvt)
 			if json {
 				json, err := formatEvtJSON(singleEvt)
 				if err != nil {
@@ -71,7 +71,7 @@ func runMon(events []garlic.EventType, json bool) {
 				}
 				fmt.Println(json)
 			} else {
-				fmt.Printf("Got %s event on CPU %d at %s\n %s",
+				fmt.Printf("Got %s event on CPU %d at %s %s\n",
 					formatEvtType(singleEvt.What),
 					singleEvt.CPU,
 					singleEvt.Timestamp.Local(),
