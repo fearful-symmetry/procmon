@@ -4,14 +4,40 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/fearful-symmetry/garlic"
 )
 
 //functions to handle formatting events
 
+//print the event based on the selected config
+func printEvent(cfg garlicCfg, singleEvt garlic.ProcEvent) (string, error) {
+	if cfg.IsJSON {
+		return formatEvtJSON(singleEvt, cfg)
+
+	}
+	var ts time.Time
+	if cfg.IsUTC {
+		ts = singleEvt.Timestamp.UTC()
+	} else {
+		ts = singleEvt.Timestamp.Local()
+	}
+	return fmt.Sprintf("Got %s event on CPU %d at %s %s\n",
+		singleEvt.WhatString,
+		singleEvt.CPU,
+		ts,
+		formatEvtPretty(singleEvt)), nil
+
+}
+
 //json string out that goes to stdout
-func formatEvtJSON(evt garlic.ProcEvent) (string, error) {
+func formatEvtJSON(evt garlic.ProcEvent, cfg garlicCfg) (string, error) {
+
+	//yah, this is...kinda hacky.
+	if cfg.IsUTC {
+		evt.Timestamp = evt.Timestamp.UTC()
+	}
 
 	j, err := json.Marshal(evt)
 	if err != nil {
@@ -41,33 +67,4 @@ func formatEvtPretty(evt garlic.ProcEvent) string {
 	}
 
 	return out
-}
-
-//Turn the event into a human-readable string
-func formatEvtType(evt garlic.EventType) string {
-
-	var event string
-
-	switch evt {
-	case garlic.ProcEventFork:
-		event = "Fork"
-	case garlic.ProcEventExec:
-		event = "Exec"
-	case garlic.ProcEventUID:
-		event = "UID"
-	case garlic.ProcEventGID:
-		event = "GID"
-	case garlic.ProcEventSID:
-		event = "SID"
-	case garlic.ProcEventPtrace:
-		event = "Ptrace"
-	case garlic.ProcEventComm:
-		event = "Command"
-	case garlic.ProcEventCoredump:
-		event = "Core Dump"
-	case garlic.ProcEventExit:
-		event = "Exit"
-	}
-
-	return event
 }

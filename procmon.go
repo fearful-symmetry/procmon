@@ -9,6 +9,12 @@ import (
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
+type garlicCfg struct {
+	IsJSON bool
+	IsUTC  bool
+	EvList []garlic.EventType
+}
+
 func handleArg(uargs []string) []garlic.EventType {
 
 	events := make([]garlic.EventType, len(uargs))
@@ -39,13 +45,13 @@ func handleArg(uargs []string) []garlic.EventType {
 	return events
 }
 
-func runMon(events []garlic.EventType, json bool) {
+func runMon(cfg garlicCfg) {
 
 	le := log.New(os.Stderr, "procmon", 0)
 	var ev garlic.CnConn
 	var err error
-	if events != nil {
-		ev, err = garlic.DialPCNWithEvents(events)
+	if cfg.EvList != nil {
+		ev, err = garlic.DialPCNWithEvents(cfg.EvList)
 		if err != nil {
 			le.Fatalf("Could not dial proc connector: %s", err)
 		}
@@ -62,22 +68,15 @@ func runMon(events []garlic.EventType, json bool) {
 			le.Printf("Error Reading Event: %s", err)
 			continue
 		}
-		for _, singleEvt := range evt {
-			evtString := formatEvtPretty(singleEvt)
-			if json {
-				json, err := formatEvtJSON(singleEvt)
-				if err != nil {
-					le.Fatalf("Error parsing to JSON: %s", err)
-				}
-				fmt.Println(json)
-			} else {
-				fmt.Printf("Got %s event on CPU %d at %s %s\n",
-					formatEvtType(singleEvt.What),
-					singleEvt.CPU,
-					singleEvt.Timestamp.Local(),
-					evtString)
-			}
 
+		for _, singleEvt := range evt {
+
+			out, err := printEvent(cfg, singleEvt)
+			if err != nil {
+				le.Printf("Print Errpr: %s", err)
+				continue
+			}
+			fmt.Println(out)
 		}
 
 	}
@@ -91,6 +90,7 @@ func main() {
 		verbose = procCLI.Flag("verbose", "verbose mode").Short('v').Bool()
 		events  = procCLI.Arg("event", "Event(s) to watch").Enums("fork", "exec", "uid", "gid", "sid", "ptrace", "comm", "coredump", "exit")
 		isJSON  = procCLI.Flag("json", "output NDJSON").Bool()
+		isUTC   = procCLI.Flag("utc", "output timestamps in UTC").Bool()
 	)
 
 	kingpin.MustParse(procCLI.Parse(os.Args[1:]))
@@ -103,7 +103,8 @@ func main() {
 		log.Printf("Reading events %v with modes %v and %v", *events, *isJSON, *verbose)
 		evtList = handleArg(*events)
 	}
+	cfg := garlicCfg{IsJSON: *isJSON, IsUTC: *isUTC, EvList: evtList}
 
-	runMon(evtList, *isJSON)
+	runMon(cfg)
 
 }
